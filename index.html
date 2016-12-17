@@ -1,0 +1,176 @@
+<!--
+ Copyright 2016 Google Inc.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <link rel="canonical" href="https://weather-pwa-sample.firebaseapp.com/final/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Toakee</title>
+  <link rel="stylesheet" type="text/css" href="styles/inline.css">
+  <link href='//fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
+
+  <!-- TODO add manifest here -->
+  
+</head>
+
+<body>
+	<header class="header">
+		<div class="product-logo-container">
+			<img src="/images/toakee-icon-white.png" class="product-logo" alt="Toakee">
+		</div>
+	    <h1 class="header__title">Toakee</h1>
+	    <button id="butRefresh" class="headerButton" aria-label="Refresh"></button>
+	    <button id="butLink" class="headerButton" aria-label="Add"></button>
+  	</header>
+
+  	<main class="main">
+  		<div class="map" id="map"></div>
+    	<div class="page-content" hidden>
+			<h3>EM CONSTRUÇÃO...</h3>
+    		<div class="row">
+	    		<div class="col-3 gridbox about">
+				    <h3>Quem somos</h3>
+				    <img src="/images/about.png" >
+				    <p>Toakee é uma ferramenta que permite pessoas e estabelecimentos criarem, administrarem eventos. </p>
+			  	</div>
+
+			  	<div class="col-3 gridbox party">
+				    <h3>Vamos festejar!</h3>
+				    <img src="/images/party.png" >
+				    <p>Marque encontros, convide amigos e saiba quem já chegou, quem está a caminho, quem se atrasa mais em eventos.</p>
+			  	</div>
+
+			  	<div class="col-3 gridbox business">
+				    <h3>Bom para os negócios</h3>
+				    <img src="/images/business-upchart.png" >
+				    <p>Empresas podem criar eventos personalizados e promover sua empresa através de promoções e vantágens para quem comparecer.</p>
+			  	</div>
+
+			  	<div class="col-3 gridbox games">
+				    <h3>Desafios</h3>
+				    <img src="/images/games-achv.png" >
+				    <p>O app recompensa os usuário assíduos e melhor classificados com diversas vantagens dentro e fora do app.</p>
+			  	</div>
+			</div>
+    	</div>
+  	</main>
+
+  	<!-- The Modal -->
+	<div id="myModal" class="modal">
+
+	  <!-- Modal content -->
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <span class="close close-modal">&times;</span>
+	      <h3>Copy link</h3>
+	    </div>
+	    <div class="modal-body">
+	      <h3 class ="coordinates">coordinates to copy</h3>
+	    </div>
+	    <!--
+	    <div class="modal-footer">
+	      <h3></h3>
+	    </div>
+	    -->
+	  </div>
+
+	</div>
+	
+	<div class="loader">
+	    <svg viewBox="0 0 32 32" width="32" height="32">
+	    	<circle id="spinner" cx="16" cy="16" r="14" fill="none"></circle>
+	    </svg>
+  	</div>
+
+
+
+
+  	<script>
+		function initMap() {
+		  	var mapCanvas = document.getElementById("map");
+		  	var myCenter = new google.maps.LatLng(51.508742,-0.120850); 
+		  	var mapOptions = {center: myCenter, 
+		  				zoom:10,
+    					//mapTypeId:google.maps.MapTypeId.HYBRID,
+		  				panControl: false,
+					    zoomControl: false,
+					    mapTypeControl: false,
+					    scaleControl: false,
+					    streetViewControl: false,
+					    overviewMapControl: false,
+					    rotateControl: false,
+					    styles: [{"elementType":"geometry","stylers":[{"hue":"#ff4400"},{"saturation":-68},{"lightness":-4},{"gamma":0.72}]},{"featureType":"road","elementType":"labels.icon"},{"featureType":"landscape.man_made","elementType":"geometry","stylers":[{"hue":"#0077ff"},{"gamma":3.1}]},{"featureType":"water","stylers":[{"hue":"#00ccff"},{"gamma":0.44},{"saturation":-33}]},{"featureType":"poi.park","stylers":[{"hue":"#44ff00"},{"saturation":-23}]},{"featureType":"water","elementType":"labels.text.fill","stylers":[{"hue":"#007fff"},{"gamma":0.77},{"saturation":65},{"lightness":99}]},{"featureType":"water","elementType":"labels.text.stroke","stylers":[{"gamma":0.11},{"weight":5.6},{"saturation":99},{"hue":"#0091ff"},{"lightness":-86}]},{"featureType":"transit.line","elementType":"geometry","stylers":[{"lightness":-48},{"hue":"#ff5e00"},{"gamma":1.2},{"saturation":-23}]},{"featureType":"transit","elementType":"labels.text.stroke","stylers":[{"saturation":-64},{"hue":"#ff9100"},{"lightness":16},{"gamma":0.47},{"weight":2.7}]}]
+					       };
+		  	var map = new google.maps.Map(mapCanvas,mapOptions);
+
+			//var infoWindow = new google.maps.InfoWindow({map: map});
+
+			// Try HTML5 geolocation.
+	        if (navigator.geolocation) {
+	          navigator.geolocation.getCurrentPosition(function(position) {
+	            var pos = {
+	              lat: position.coords.latitude,
+	              lng: position.coords.longitude
+	            };
+
+	            console.log("Geolocation");
+	            document.querySelector('.coordinates').textContent = "" +pos.lat + " ,  "+ pos.lng;
+
+	            myCenter = new google.maps.LatLng(pos.lat, pos.lng); 
+	            var marker = new google.maps.Marker({
+			    	position: myCenter,
+			    	icon:'/images/toakee-icon-pin-red30x40.png',
+			    	animation: google.maps.Animation.BOUNCE
+		  		});
+		  		marker.setMap(map);
+		  		map.setCenter(pos);
+	           // infoWindow.setPosition(pos);
+	            //infoWindow.setContent('TOAKEE!');
+	            
+	          }, function() {
+	          	console.log('The Geolocation is working');
+	            //handleLocationError(true, infoWindow, map.getCenter());
+	          });
+	        } else {
+	        	console.log('Error: The Geolocation service failed.');
+	          // Browser doesn't support Geolocation
+	          //handleLocationError(false, infoWindow, map.getCenter());
+	        }
+    	}
+
+        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+      
+     	}
+
+	</script>
+
+	<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAlzHKCidf5h1iN49q1i0BQVJ9E4sLanGE&callback=initMap">
+    </script>
+  	<!-- Uncomment the line below when ready to test with fake data -->
+	<script src="scripts/app.js" async></script>
+
+</body>
+</html>
